@@ -1,73 +1,62 @@
-# Welcome to your Lovable project
+# 🌱 CropCareAI
 
-## Project info
+**CropCareAI** is an AI-powered crop disease detection and agricultural assistance platform designed to help farmers and gardeners identify plant diseases quickly and accurately.  
+It uses a **MobileNetV2** deep learning model to classify diseases from uploaded crop leaf images and provides detailed descriptions and prescriptions.  
+The app also integrates **OpenAI API** for agricultural Q&A, a community forum for farmer interaction, and OTP-based authentication using **Twilio**.
 
-**URL**: https://lovable.dev/projects/6745b60f-7f84-4993-8efe-e948affdf178
+---
 
-## How can I edit this code?
+##  Features
 
-There are several ways of editing your application.
+### 1. **Home Page**
+- Upload a crop leaf image.
+- AI predicts the disease using the **MobileNetV2** model.
+- Get a detailed **description** and **prescription** for the disease.
+- OpenAI API integration for improved diagnosis explanation.
 
-**Use Lovable**
+### 2. **Explore Page**
+- Ask AI anything about crops, farming techniques, and diseases.
+- Get instant, relevant answers from the integrated **OpenAI API**.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6745b60f-7f84-4993-8efe-e948affdf178) and start prompting.
+### 3. **Community Page**
+- Post and share farming experiences.
+- Like and comment on other users’ posts.
+- Powered by a custom **backend and database**.
 
-Changes made via Lovable will be committed automatically to this repo.
+### 4. **Help Page**
+- Guidance on how to use the platform.
+- Frequently Asked Questions (FAQs).
 
-**Use your preferred IDE**
+### 5. **About Page**
+- The objective of the project is to provide one place solution to the farmers for healthy and benificiary cropping techniques helps them to detect the disease in their crops by just uploading the image of the crop leaves and it is easy to use as user can use this website in their local language and can login without email id also
+- ## Developer information.
+Name of Developer-Anurag Joshi
+email-aj418566@gmail.com
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 6. **Login & Signup**
+- User authentication system.
+- OTP verification via **Twilio SMS**.
+- Secure login and signup process.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+##  Tech Stack
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### **Frontend**
+- React.js
+- Tailwind CSS / CSS3
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### **Backend**
+- python
+- FastAPI
+- postgreSQL (Database)
+- Twilio (OTP verification)
+- OpenAI API (AI responses)
 
-# Step 3: Install the necessary dependencies.
-npm i
+### **Machine Learning**
+- TensorFlow / Keras (MobileNetV2 Model)
+- Python (Model training and export)
+- FastAPI (Model serving)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6745b60f-7f84-4993-8efe-e948affdf178) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
