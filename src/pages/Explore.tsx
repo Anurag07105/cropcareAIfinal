@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Leaf, Bug, Droplets, Sun } from 'lucide-react';
+import { Leaf, Bug, Droplets, Sun } from 'lucide-react';
 
 const Explore = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(
     localStorage.getItem('selectedLanguage') || 'en'
   );
-  const [searchQuery, setSearchQuery] = useState('');
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,21 +16,23 @@ const Explore = () => {
   const translations = {
     en: {
       title: 'Explore Crop Diseases',
-      subtitle: 'Search and learn about various crop diseases and their treatments',
-      searchPlaceholder: 'Search for crop diseases, symptoms, or treatments...',
+      subtitle: 'Ask AI and learn about various crop diseases and their treatments',
       commonDiseases: 'Common Crop Diseases',
       symptoms: 'Symptoms',
       treatment: 'Treatment',
-      prevention: 'Prevention'
+      prevention: 'Prevention',
+      askAI: 'Ask CropCare AI',
+      askPlaceholder: 'Ask about any crop disease, symptoms, or treatments...',
     },
     hi: {
       title: 'फसल रोगों की खोज करें',
-      subtitle: 'विभिन्न फसल रोगों और उनके उपचार के बारे में खोजें और जानें',
-      searchPlaceholder: 'फसल रोग, लक्षण या उपचार खोजें...',
+      subtitle: 'एआई से पूछें और विभिन्न फसल रोगों और उनके उपचार के बारे में जानें',
       commonDiseases: 'सामान्य फसल रोग',
       symptoms: 'लक्षण',
       treatment: 'उपचार',
-      prevention: 'रोकथाम'
+      prevention: 'रोकथाम',
+      askAI: 'क्रॉपकेयर एआई से पूछें',
+      askPlaceholder: 'किसी भी फसल रोग, लक्षण या उपचार के बारे में पूछें...',
     }
   };
 
@@ -64,12 +64,6 @@ const Explore = () => {
       severity: 'Medium'
     }
   ];
-
-  const filteredDiseases = diseases.filter(disease =>
-    disease.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    disease.crop.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    disease.symptoms.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,24 +101,38 @@ const Explore = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t.subtitle}</p>
         </div>
 
-        {/* Search */}
-        <div className="mb-8">
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder={t.searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+        {/* Ask AI at top */}
+        <div className="mb-12 bg-white p-6 rounded-lg shadow-md max-w-3xl mx-auto">
+          <h2 className="text-xl font-semibold text-primary mb-4">{t.askAI}</h2>
+          <form onSubmit={handleSubmit}>
+            <textarea
+              className="w-full border rounded p-3 text-sm"
+              rows={4}
+              placeholder={t.askPlaceholder}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
-          </div>
+            <Button
+              type="submit"
+              className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              {loading ? 'Thinking...' : 'Ask AI'}
+            </Button>
+          </form>
+
+          {response && (
+            <div className="mt-6 bg-gray-100 p-4 rounded">
+              <strong className="text-primary">AI Response:</strong>
+              <p className="mt-2 text-sm whitespace-pre-line">{response}</p>
+            </div>
+          )}
         </div>
 
         {/* Disease Cards */}
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-primary">{t.commonDiseases}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDiseases.map((disease, index) => (
+            {diseases.map((disease, index) => (
               <Card key={index} className="hover:shadow-medium transition-shadow">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -168,34 +176,6 @@ const Explore = () => {
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="mt-12 bg-white p-6 rounded-lg shadow-md max-w-3xl mx-auto">
-        <h2 className="text-xl font-semibold text-primary mb-4">
-          Ask CropCare AI
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <textarea
-            className="w-full border rounded p-3 text-sm"
-            rows={4}
-            placeholder="Ask about any crop disease, symptoms, or treatments..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <Button
-            type="submit"
-            className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white"
-          >
-            {loading ? 'Thinking...' : 'Ask AI'}
-          </Button>
-        </form>
-
-        {response && (
-          <div className="mt-6 bg-gray-100 p-4 rounded">
-            <strong className="text-primary">AI Response:</strong>
-            <p className="mt-2 text-sm whitespace-pre-line">{response}</p>
-          </div>
-        )}
       </div>
     </div>
   );

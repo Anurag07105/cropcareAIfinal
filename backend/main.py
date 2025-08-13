@@ -3,12 +3,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routes import explore,auth,community,help,predict# Import our explore routes
 
-app = FastAPI()
+app = FastAPI( title="CropCareAI Backend",
+    description="Backend API for CropCareAI project - disease detection, community, and AI support",
+    version="1.0.0")
 
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[ "http://localhost:8080",        # Vite dev (your case)
+        "https://cropcareai.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
