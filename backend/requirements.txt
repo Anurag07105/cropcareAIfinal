@@ -13,3 +13,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 typing_extensions
 pydantic[email]
+twilio
