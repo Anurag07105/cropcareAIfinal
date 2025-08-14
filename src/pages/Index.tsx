@@ -9,11 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { Leaf, Shield, Users, Target, ArrowRight, Sparkles } from 'lucide-react';
 import heroImage from '@/assets/hero-agriculture.jpg';
 
+// Import backend API function
+import { predictImage } from '../api';
+
 const Index = () => {
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('selectedLanguage');
@@ -27,6 +31,19 @@ const Index = () => {
   const handleLanguageSelect = (language: string) => {
     setSelectedLanguage(language);
     setShowLanguageSelector(false);
+  };
+
+  const handleImageAnalysis = async (file: File) => {
+    setLoading(true);
+    try {
+      const result = await predictImage(file);
+      setAnalysisResult(result);
+    } catch (err) {
+      console.error('Prediction failed:', err);
+      setAnalysisResult({ error: 'AI analysis is currently unavailable.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const translations = {
@@ -174,14 +191,23 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div>
               <ImageUpload 
-                onImageUpload={setUploadedImage}
+                onImageUpload={(file) => {
+                  setUploadedImage(file);
+                  handleImageAnalysis(file);
+                }}
                 onAnalysisComplete={setAnalysisResult}
                 language={selectedLanguage}
               />
             </div>
             
             <div>
-              {analysisResult ? (
+              {loading ? (
+                <Card className="border-dashed border-2 border-muted">
+                  <CardContent className="p-8 text-center">
+                    <p>Analyzing image... please wait</p>
+                  </CardContent>
+                </Card>
+              ) : analysisResult ? (
                 <AnalysisResult result={analysisResult} language={selectedLanguage} />
               ) : (
                 <Card className="border-dashed border-2 border-muted">

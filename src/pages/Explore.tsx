@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Leaf, Bug, Droplets, Sun } from 'lucide-react';
 
+// Import the API call
+import { chatAI } from '../api';
+
 const Explore = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(
     localStorage.getItem('selectedLanguage') || 'en'
@@ -73,17 +76,10 @@ const Explore = () => {
     setResponse('');
 
     try {
-      const res = await fetch('http://localhost:8000/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query }),
-      });
-
-      const data = await res.json();
-      setResponse(data.reply);
+      const data = await chatAI(query); // Call API function
+      setResponse(data.reply || 'No response from AI');
     } catch (error) {
+      console.error(error);
       setResponse('AI assistant is currently unavailable.');
     } finally {
       setLoading(false);
