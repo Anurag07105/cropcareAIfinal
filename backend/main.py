@@ -11,7 +11,7 @@ app = FastAPI( title="CropCareAI Backend",
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[ "http://localhost:8080",        # Vite dev
-        "https://cropcare-a-ifinal-dc2jve9l2-anurag07105s-projects.vercel.app"],
+        "https://cropcare-a-ifinal.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
