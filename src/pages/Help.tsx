@@ -13,14 +13,44 @@ const Help = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(
     localStorage.getItem('selectedLanguage') || 'en'
   );
-  const [quickHelpOptions, setQuickHelpOptions] = useState<any[]>([]);
-  const [faqs, setFaqs] = useState<any[]>([]);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
+
+  const [quickHelpOptions, setQuickHelpOptions] = useState<any[]>([
+    { icon: Phone, title: 'Call Support', description: '+91 1800 123 4567', action: 'tel:+911800123456' },
+    { icon: Mail, title: 'Email Support', description: 'support@cropcare-ai.com', action: 'mailto:support@cropcare-ai.com' },
+    { icon: MessageCircle, title: 'Live Chat', description: 'Chat with our experts', action: '#' },
+    { icon: Video, title: 'Video Tutorials', description: 'Watch how-to videos', action: '#' },
+    { icon: BookOpen, title: 'Documentation', description: 'Read detailed guides', action: '#' },
+    { icon: FileText, title: 'User Guide', description: 'Download user manual', action: '#' }
+  ]);
+
+  const [faqs, setFaqs] = useState<any[]>([
+    {
+      question: 'How do I upload an image for disease detection?',
+      answer: 'Simply click on the upload area on the home page, select your crop leaf image, and our AI will analyze it for diseases. You can either take a photo directly or upload from your gallery.'
+    },
+    {
+      question: 'What image formats are supported?',
+      answer: 'We support JPG, PNG, and WEBP formats. Images should be clear and well-lit for best results. Maximum file size is 10MB.'
+    },
+    {
+      question: 'How accurate is the disease detection?',
+      answer: 'Our AI model has an accuracy rate of 94% based on thousands of crop images. However, we recommend consulting with agricultural experts for severe cases.'
+    },
+    {
+      question: 'Can I use the app offline?',
+      answer: 'Currently, the app requires an internet connection for AI analysis. We are working on offline capabilities for future versions.'
+    },
+    {
+      question: 'Is the app free to use?',
+      answer: 'Basic disease detection is free for all users. Premium features like detailed treatment plans and expert consultations require a subscription.'
+    },
+    {
+      question: 'How do I change the language?',
+      answer: 'You can change the language from the language selector that appears when you first visit the site, or contact support to reset your language preference.'
+    }
+  ]);
+
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [loading, setLoading] = useState(false);
 
   const translations = {
@@ -64,35 +94,59 @@ const Help = () => {
 
   const t = translations[selectedLanguage as keyof typeof translations] || translations.en;
 
-  // Fetch Quick Help & FAQs from backend
+  // Load Quick Help from backend
   useEffect(() => {
     (async () => {
       try {
-        const quickHelpData = await getQuickHelp();
-        setQuickHelpOptions(quickHelpData || []);
-      } catch (err) {
-        console.error('Failed to load quick help:', err);
-      }
-    })();
-    (async () => {
-      try {
-        const faqData = await getFAQs();
-        setFaqs(faqData || []);
-      } catch (err) {
-        console.error('Failed to load FAQs:', err);
+        const data = await getQuickHelp();
+        if (Array.isArray(data) && data.length > 0) {
+          const iconMap: any = {
+            'Call Support': Phone,
+            'Email Support': Mail,
+            'Live Chat': MessageCircle,
+            'Video Tutorials': Video,
+            'Documentation': BookOpen,
+            'User Guide': FileText
+          };
+          setQuickHelpOptions(
+            data.map((item: any) => ({
+              ...item,
+              icon: iconMap[item.title] || HelpCircle
+            }))
+          );
+        }
+      } catch {
+        // Keep defaults if API fails
       }
     })();
   }, []);
 
-  // Handle form submission
-  const handleSubmit = async () => {
+  // Load FAQs from backend
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getFAQs();
+        if (Array.isArray(data) && data.length > 0) {
+          setFaqs(data.map((faq: any) => ({
+            question: faq.question || faq.title,
+            answer: faq.answer || faq.content
+          })));
+        }
+      } catch {
+        // Keep defaults if API fails
+      }
+    })();
+  }, []);
+
+  const handleContactSubmit = async () => {
     if (!formData.name || !formData.email || !formData.subject || !formData.message) return;
     setLoading(true);
     try {
       await contactSupport(formData);
       setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (err) {
-      console.error('Failed to send message:', err);
+      alert('Message sent successfully!');
+    } catch {
+      alert('Failed to send message.');
     } finally {
       setLoading(false);
     }
@@ -117,23 +171,16 @@ const Help = () => {
           <h2 className="text-2xl font-semibold text-primary mb-6">{t.quickHelp}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {quickHelpOptions.map((option, index) => {
-              const IconComp = 
-                option.title?.includes(t.callSupport) ? Phone :
-                option.title?.includes(t.emailSupport) ? Mail :
-                option.title?.includes(t.liveChat) ? MessageCircle :
-                option.title?.includes(t.tutorials) ? Video :
-                option.title?.includes(t.documentation) ? BookOpen :
-                option.title?.includes(t.userGuide) ? FileText :
-                HelpCircle;
+              const Icon = option.icon;
               return (
                 <Card key={index} className="hover:shadow-medium transition-shadow cursor-pointer">
                   <CardContent className="p-6 text-center">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <IconComp className="w-6 h-6 text-primary" />
+                      <Icon className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="font-semibold mb-2">{option.title}</h3>
                     <p className="text-sm text-muted-foreground mb-4">{option.description}</p>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => window.open(option.action, '_blank')}>
+                    <Button variant="outline" size="sm" className="w-full">
                       Get Help
                     </Button>
                   </CardContent>
@@ -176,29 +223,29 @@ const Help = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">{t.name}</label>
-                <Input 
-                  placeholder="Your name" 
-                  value={formData.name} 
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                <Input
+                  placeholder="Your name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">{t.email}</label>
-                <Input 
-                  type="email" 
+                <Input
+                  type="email"
                   placeholder="your.email@example.com"
-                  value={formData.email} 
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
             </div>
             
             <div>
               <label className="text-sm font-medium mb-2 block">{t.subject}</label>
-              <Input 
+              <Input
                 placeholder="Brief description of your issue"
                 value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
               />
             </div>
             
@@ -208,12 +255,16 @@ const Help = () => {
                 placeholder="Describe your issue or question in detail..."
                 className="min-h-[120px] resize-none"
                 value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })} 
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               />
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button className="flex items-center space-x-2" onClick={handleSubmit} disabled={loading}>
+              <Button
+                className="flex items-center space-x-2"
+                onClick={handleContactSubmit}
+                disabled={loading}
+              >
                 <Send className="w-4 h-4" />
                 <span>{loading ? 'Sending...' : t.sendMessage}</span>
               </Button>

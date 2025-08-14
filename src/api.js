@@ -113,15 +113,6 @@ export async function getFAQs() {
   return res.json();
 }
 
-// Create FAQ (admin)
-export async function createFAQ(faqData) {
-  const res = await fetch(`${API_BASE_URL}/help/faqs`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(faqData),
-  });
-  return res.json();
-}
 
 // Contact support
 export async function contactSupport(messageData) {
