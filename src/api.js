@@ -1,7 +1,11 @@
 // Base API URL from .env (fallback to local dev)
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-console.log('Environment variables:', import.meta.env);
+
+// 🔍 DEBUG: Log environment variables
+console.log('🔍 Environment Variables Check:');
+console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
 console.log('API_BASE_URL:', API_BASE_URL);
+console.log('All env vars:', import.meta.env);
 
 /* =======================
    AUTHENTICATION ROUTES
@@ -9,12 +13,29 @@ console.log('API_BASE_URL:', API_BASE_URL);
 
 // Email Signup
 export async function signupEmail(userData) {
-  const res = await fetch(`${API_BASE_URL}/auth/signup/email`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(userData),
-  });
-  return res.json();
+  const fullURL = `${API_BASE_URL}/auth/signup/email`;
+  console.log('🚀 Signup URL:', fullURL);
+  
+  try {
+    const res = await fetch(fullURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+    
+    console.log('📡 Signup Response status:', res.status);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('❌ Signup Error response:', errorText);
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('❌ Signup Network Error:', error);
+    throw error;
+  }
 }
 
 // Phone Signup
@@ -89,14 +110,35 @@ export async function likePost(postId) {
    EXPLORE ROUTES
    ======================= */
 
-// Chat AI
+// Chat AI - WITH DEBUG
 export async function chatAI(query) {
-  const res = await fetch(`${API_BASE_URL}/explore/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query }),
-  });
-  return res.json();
+  const fullURL = `${API_BASE_URL}/explore/chat`;
+  console.log('🚀 AI Chat URL:', fullURL);
+  console.log('🚀 Query:', query);
+  
+  try {
+    const res = await fetch(fullURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+    });
+    
+    console.log('📡 AI Response status:', res.status);
+    console.log('📡 AI Response headers:', [...res.headers.entries()]);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('❌ AI Error response:', errorText);
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
+    const jsonResponse = await res.json();
+    console.log('✅ AI Success response:', jsonResponse);
+    return jsonResponse;
+  } catch (error) {
+    console.error('❌ AI Network/Fetch Error:', error);
+    throw error;
+  }
 }
 
 /* =======================
@@ -114,7 +156,6 @@ export async function getFAQs() {
   const res = await fetch(`${API_BASE_URL}/help/faqs`);
   return res.json();
 }
-
 
 // Contact support
 export async function contactSupport(messageData) {
