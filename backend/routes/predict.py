@@ -1,13 +1,14 @@
+# backend/routes/predict.py
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from PIL import Image
 import numpy as np
 import io
 import tensorflow as tf
 import os
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 
-#load env file
+# Load env file
 load_dotenv()
 
 # TensorFlow imports
@@ -20,11 +21,12 @@ router = APIRouter()
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "model", "mobilenetv2_cropcare.keras")
 MODEL_PATH = os.path.abspath(MODEL_PATH)
 
-
 # Load the model once at startup
 try:
     model = load_model(MODEL_PATH)
+    print(f"✅ Model loaded successfully from: {MODEL_PATH}")
 except Exception as e:
+    print(f"❌ Failed to load model: {e}")
     raise RuntimeError(f"Failed to load model from {MODEL_PATH}: {e}")
 
 class_names = [
@@ -68,56 +70,84 @@ class_names = [
     'Tomato___healthy'
 ]
 
-
 @router.post("/predict")
 def predict(file: UploadFile = File(...)):
-    if not file.filename.endswith((".jpg", ".jpeg", ".png")):
-        raise HTTPException(status_code=400, detail="Invalid image format")
-
-    contents = file.file.read()
-    img = Image.open(io.BytesIO(contents)).convert("RGB")
-    img = img.resize((224, 224))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
-
-    predictions = model.predict(img_array)
-    class_index = np.argmax(predictions[0])
-    confidence = round(float(np.max(predictions[0])) * 100, 2)
-    predicted_class = class_names[class_index]
-
-    remedy = get_ai_prescription(predicted_class)
-
-    return {
-        "prediction": predicted_class,
-        "confidence": confidence,
-        "remedy": remedy
-    }
-# Function to get AI-generated remedy
-def get_ai_prescription(disease: str) -> str:
-    prompt = f"A farmer's crop is diagnosed with {disease}. Suggest detailed, actionable remedies for this disease."
+    print(f"🔍 Processing image: {file.filename}")
+    
+    if not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
+        raise HTTPException(status_code=400, detail="Invalid image format. Please upload JPG, JPEG, or PNG files.")
 
     try:
-        response = openai.ChatCompletion.create(
+        contents = file.file.read()
+        img = Image.open(io.BytesIO(contents)).convert("RGB")
+        img = img.resize((224, 224))
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)
+        img_array = preprocess_input(img_array)
+
+        predictions = model.predict(img_array)
+        class_index = np.argmax(predictions[0])
+        confidence = round(float(np.max(predictions[0])) * 100, 2)
+        predicted_class = class_names[class_index]
+        
+        print(f"✅ Prediction: {predicted_class} ({confidence}%)")
+
+        remedy = get_ai_prescription(predicted_class)
+
+        return {
+            "prediction": predicted_class,
+            "confidence": confidence,
+            "remedy": remedy
+        }
+    except Exception as e:
+        print(f"❌ Prediction error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
+def get_ai_prescription(disease: str) -> str:
+    """Get AI-generated remedy using updated OpenAI API"""
+    prompt = f"A farmer's crop is diagnosed with {disease}. Suggest detailed, actionable remedies for this disease including organic and chemical treatment options."
+
+    try:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            print("❌ OpenAI API key not found")
+            return "AI prescription service is currently unavailable. Please consult with agricultural experts for treatment recommendations."
+        
+        client = OpenAI(api_key=api_key)
+        
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are an expert agricultural assistant."},
+                {"role": "system", "content": "You are an expert agricultural assistant specializing in crop disease management and treatment."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=100,
+            max_tokens=150,
             temperature=0.7
         )
-        return response['choices'][0]['message']['content'].strip()
+        
+        if response.choices and len(response.choices) > 0:
+            remedy = response.choices[0].message.content.strip()
+            print(f"✅ AI remedy generated for {disease}")
+            return remedy
+        else:
+            print("❌ No response from OpenAI")
+            return "AI prescription service is currently unavailable. Please consult with agricultural experts."
+            
     except Exception as e:
-        return "AI assistant unavailable. Please try again later."
-
-
+        print(f"❌ AI prescription error: {str(e)}")
+        return "AI prescription service is currently unavailable. Please consult with agricultural experts for treatment recommendations."
 
 # Health check route
 @router.get("/health")
 def health():
-    return {"status": "Backend is running"}
-
-
-
-# To run: uvicorn main:app --reload --port 8000
+    """Health check for prediction service"""
+    model_status = "✅ Loaded" if 'model' in globals() else "❌ Not loaded"
+    openai_status = "✅ Configured" if os.getenv("OPENAI_API_KEY") else "❌ Missing API key"
+    
+    return {
+        "status": "healthy",
+        "service": "prediction",
+        "model": model_status,
+        "openai": openai_status,
+        "classes_available": len(class_names)
+    }
