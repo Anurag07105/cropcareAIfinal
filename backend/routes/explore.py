@@ -21,8 +21,7 @@ def chat_ai(req: ChatRequest):
         
         if not api_key:
             print("❌ OpenAI API key not found in environment variables")
-            return {"reply": "AI service configuration error. Please contact support."}
-        
+            raise HTTPException(status_code=500, detail="AI service configuration error.")
         # Initialize OpenAI client with new API
         client = OpenAI(api_key=api_key)
         
