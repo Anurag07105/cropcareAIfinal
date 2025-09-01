@@ -16,40 +16,41 @@ class ChatRequest(BaseModel):
 @router.post("/chat")
 def chat_ai(req: ChatRequest):
     try:
-        # Get API key from environment
         api_key = os.getenv("OPENAI_API_KEY")
         
         if not api_key:
             print("❌ OpenAI API key not found in environment variables")
+            # Return a proper server error
             raise HTTPException(status_code=500, detail="AI service configuration error.")
-        # Initialize OpenAI client with new API
+        
         client = OpenAI(api_key=api_key)
         
         print(f"🚀 Processing AI query: {req.query[:50]}...")
         
-        # Make API call with new syntax
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful and knowledgeable agricultural assistant specializing in crop diseases and farming solutions."},
+                {"role": "system", "content": "You are a helpful and knowledgeable agricultural assistant..."},
                 {"role": "user", "content": req.query}
             ],
             max_tokens=200,
             temperature=0.7
         )
         
-        # Extract response with new API structure
         if response.choices and len(response.choices) > 0:
+            # --- THIS IS THE FIX ---
             reply = response.choices[0].message.content.strip()
+            # --- END OF FIX ---
             print(f"✅ AI response generated: {reply[:50]}...")
             return {"reply": reply}
         else:
             print("❌ No response from OpenAI")
-            return {"reply": "AI assistant is currently unavailable. Please try again later."}
+            raise HTTPException(status_code=503, detail="AI assistant is currently unavailable.")
             
     except Exception as e:
         print(f"❌ AI Error: {str(e)}")
-        return {"reply": "AI assistant is currently unavailable. Please try again later."}
+        # Raise an exception so the frontend knows it was a server-side issue
+        raise HTTPException(status_code=503, detail="AI assistant is currently unavailable.")
 
 @router.get("/health")
 def health_check():
