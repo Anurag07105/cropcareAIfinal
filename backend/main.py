@@ -39,6 +39,7 @@ additional_origins = [
     "http://127.0.0.1:5173",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "https://cropcare-a-ifinal-git-main-anurag07105s-projects.vercel.app",
 ]
 
 allow_origins = {frontend_origin, *additional_origins}
