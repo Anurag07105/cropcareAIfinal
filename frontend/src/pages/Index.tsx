@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { Navbar } from '@/components/Navbar';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -18,6 +18,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('selectedLanguage');
@@ -188,7 +189,10 @@ const Index = () => {
       {/* Main Upload Section */}
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div
+            ref={analysisResult && !analysisResult.error ? reportRef : undefined}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start"
+          >
             <div>
               <ImageUpload 
                 onImageUpload={(file) => {
@@ -208,7 +212,11 @@ const Index = () => {
                   </CardContent>
                 </Card>
               ) : analysisResult ? (
-                <AnalysisResult result={analysisResult} language={selectedLanguage} />
+                <AnalysisResult
+                  result={analysisResult}
+                  language={selectedLanguage}
+                  downloadTargetRef={reportRef}
+                />
               ) : (
                 <Card className="border-dashed border-2 border-muted">
                   <CardContent className="p-8 text-center">

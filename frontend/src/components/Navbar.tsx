@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Menu, X, HelpCircle, Users, Search, User, Home, LogOut } from 'lucide-react';
+import { Leaf, Menu, X, HelpCircle, Users, Search, User, Home, LogOut, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -22,6 +22,7 @@ const translations = {
     home: 'Home',
     explore: 'Explore',
     community: 'Community',
+    history: 'History',
     about: 'About',
     help: 'Help',
     login: 'Login',
@@ -31,6 +32,7 @@ const translations = {
     home: 'होम',
     explore: 'खोजें',
     community: 'समुदाय',
+    history: 'History',
     about: 'हमारे बारे में',
     help: 'सहायता',
     login: 'लॉग इन',
@@ -48,6 +50,7 @@ export const Navbar = ({ language }: NavbarProps) => {
     { path: '/', label: t.home, icon: Home },
     { path: '/explore', label: t.explore, icon: Search },
     { path: '/community', label: t.community, icon: Users },
+    { path: '/history', label: t.history, icon: Clock },
     { path: '/about', label: t.about, icon: User },
     { path: '/help', label: t.help, icon: HelpCircle },
   ];

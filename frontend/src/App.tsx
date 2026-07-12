@@ -15,6 +15,8 @@ import Explore from "./pages/Explore";
 import Community from "./pages/Community";
 import About from "./pages/About";
 import Help from "./pages/Help";
+import History from "./pages/History";
+import HistoryReport from "./pages/HistoryReport";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import type { ReactNode } from "react";
@@ -71,6 +73,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Community />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history/:id"
+              element={
+                <ProtectedRoute>
+                  <HistoryReport />
                 </ProtectedRoute>
               }
             />

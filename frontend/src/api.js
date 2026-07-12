@@ -142,3 +142,31 @@ export async function backendHealth() {
   const res = await fetch(`${API_BASE_URL}/predict/health`);
   return res.json();
 }
+
+/* =======================
+   HISTORY ROUTES
+   ======================= */
+
+export async function getPredictionHistory() {
+  const headers = await authHeaders();
+  const res = await fetch(`${API_BASE_URL}/history`, { headers });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getPredictionHistoryItem(id) {
+  const headers = await authHeaders();
+  const res = await fetch(`${API_BASE_URL}/history/${id}`, { headers });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function deletePredictionHistoryItem(id) {
+  const headers = await authHeaders();
+  const res = await fetch(`${API_BASE_URL}/history/${id}`, {
+    method: "DELETE",
+    headers,
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}

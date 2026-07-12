@@ -25,7 +25,7 @@ def configure_logging() -> None:
 configure_logging()
 logger = logging.getLogger(__name__)
 
-from .routes import explore, auth, community, help, predict
+from .routes import explore, auth, community, help, predict, history
 
 app = FastAPI(
     title="CropCareAI Backend",
@@ -58,6 +58,7 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(community.router, prefix="/community", tags=["Community"])
 app.include_router(help.router, prefix="/help", tags=["Help & Support"])
 app.include_router(predict.router, prefix="/predict", tags=["Predict"])
+app.include_router(history.router, prefix="/history", tags=["Prediction History"])
 
 
 @app.on_event("startup")
@@ -76,6 +77,12 @@ def run_startup_migrations():
             conn.execute(
                 text("ALTER TABLE users ADD COLUMN IF NOT EXISTS supabase_uid VARCHAR UNIQUE")
             )
+            conn.execute(text("ALTER TABLE crop_images ADD COLUMN IF NOT EXISTS storage_path VARCHAR"))
+            conn.execute(text("ALTER TABLE crop_images ADD COLUMN IF NOT EXISTS crop_name VARCHAR"))
+            conn.execute(text("ALTER TABLE crop_images ADD COLUMN IF NOT EXISTS description TEXT"))
+            conn.execute(text("ALTER TABLE crop_images ADD COLUMN IF NOT EXISTS prescription TEXT"))
+            conn.execute(text("ALTER TABLE crop_images ADD COLUMN IF NOT EXISTS actions JSON"))
+            conn.execute(text("ALTER TABLE crop_images ADD COLUMN IF NOT EXISTS raw_class VARCHAR"))
             conn.commit()
             logger.info("✅ Startup migrations complete")
         except Exception as e:

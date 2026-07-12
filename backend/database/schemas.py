@@ -141,3 +141,36 @@ class SupportMessageOut(SupportMessageBase):
 
     class Config:
         from_attributes = True
+
+
+# ------------------ PREDICTION HISTORY ------------------
+class PredictionHistoryCreate(BaseModel):
+    image_url: str
+    storage_path: Optional[str] = None
+    crop_name: Optional[str] = None
+    disease: str
+    confidence: float
+    description: Optional[str] = None
+    prescription: Optional[str] = None
+    recommendation: Optional[str] = None
+    actions: List[str] = []
+    raw_class: Optional[str] = None
+
+
+class PredictionHistoryOut(BaseModel):
+    id: int
+    user_id: int
+    image_url: str
+    storage_path: Optional[str] = None
+    crop_name: Optional[str] = None
+    disease: Optional[str] = None
+    confidence: Optional[float] = None
+    description: Optional[str] = None
+    prescription: Optional[str] = None
+    recommendation: Optional[str] = None
+    actions: List[str] = []
+    raw_class: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -77,6 +77,16 @@ def get_supabase_client() -> Optional[Any]:
         return creative_client(supabase_url, supabase_key)
     raise HTTPException(status_code=500, detail="Supabase library not installed")
 
+
+def split_prediction_label(label: str) -> tuple[str, str]:
+    if "___" not in label:
+        return "Unknown Crop", label.replace("_", " ").strip()
+
+    crop, disease = label.split("___", 1)
+    crop_name = crop.replace("_", " ").strip()
+    disease_name = disease.replace("_", " ").replace("  ", " ").strip()
+    return crop_name, disease_name
+
 class_names = [
     'Apple___Apple_scab',
     'Apple___Black_rot',
@@ -148,6 +158,7 @@ async def predict_and_store(
         class_index = int(np.argmax(predictions[0]))
         confidence = round(float(np.max(predictions[0])) * 100, 2)
         predicted_class = class_names[class_index]
+        crop_name, fallback_disease = split_prediction_label(predicted_class)
         
         logger.info(f"✅ Prediction: {predicted_class} ({confidence}%)")
 
@@ -171,8 +182,14 @@ async def predict_and_store(
         db_image = models.CropImage(
             user_id=current_user.id,
             image_url=public_url,
+            storage_path=unique_filename,
+            crop_name=crop_name,
             disease_name=ai_enrichment.get("name", predicted_class),
             confidence=confidence,
+            description=ai_enrichment.get("description"),
+            prescription=ai_enrichment.get("prescription"),
+            actions=ai_enrichment.get("actions", []),
+            raw_class=predicted_class,
         )
         db.add(db_image)
         db.commit()
@@ -180,12 +197,16 @@ async def predict_and_store(
 
         return {
             "id": db_image.id,
+            "crop_name": crop_name,
             "name": ai_enrichment.get("name", predicted_class),
+            "disease": ai_enrichment.get("name", fallback_disease),
             "confidence": confidence,
             "description": ai_enrichment.get("description"),
             "prescription": ai_enrichment.get("prescription"),
+            "recommendation": ai_enrichment.get("prescription"),
             "actions": ai_enrichment.get("actions", []),
             "image_url": public_url,
+            "storage_path": unique_filename,
             "raw_class": predicted_class
         }
     except Exception as e:

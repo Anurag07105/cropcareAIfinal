@@ -2,7 +2,7 @@
 
 from sqlalchemy import (
     Column, Integer, String, Boolean, Text, 
-    ForeignKey, DateTime, UniqueConstraint, func, Float
+    ForeignKey, DateTime, UniqueConstraint, func, Float, JSON
 )
 from sqlalchemy.orm import relationship
 from . import Base
@@ -40,8 +40,14 @@ class CropImage(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     image_url = Column(String, nullable=False)
+    storage_path = Column(String, nullable=True)
+    crop_name = Column(String, nullable=True)
     disease_name = Column(String, nullable=True)
     confidence = Column(Float, nullable=True)
+    description = Column(Text, nullable=True)
+    prescription = Column(Text, nullable=True)
+    actions = Column(JSON, nullable=True)
+    raw_class = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     user = relationship("User", back_populates="crop_images")

@@ -1,8 +1,10 @@
+import { useState, type RefObject } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, CheckCircle, Pill, Sprout, Download, Share2 } from 'lucide-react';
+import { downloadReportElement } from '@/lib/reportDownload';
 
 interface AnalysisResult {
   name: string;
@@ -15,6 +17,8 @@ interface AnalysisResult {
 interface AnalysisResultProps {
   result: AnalysisResult;
   language: string;
+  downloadTargetRef?: RefObject<HTMLElement>;
+  reportDate?: string;
 }
 
 const translations = {
@@ -34,7 +38,8 @@ const translations = {
   }
 };
 
-export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
+export const AnalysisResult = ({ result, language, downloadTargetRef, reportDate }: AnalysisResultProps) => {
+  const [isDownloading, setIsDownloading] = useState(false);
   const t = translations[language as keyof typeof translations] || translations.en;
 
   // Handle case where result contains an error message (from Index.tsx catch block)
@@ -71,6 +76,12 @@ export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
 
   const confidence = result.confidence || 0;
   const severity = getSeverity(confidence);
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    await downloadReportElement(downloadTargetRef?.current || null, reportDate);
+    setIsDownloading(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -152,7 +163,12 @@ export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Button variant="default" className="flex items-center space-x-2">
+            <Button
+              variant="default"
+              className="flex items-center space-x-2"
+              onClick={handleDownload}
+              disabled={isDownloading}
+            >
               <Download className="w-4 h-4" />
               <span>{t.downloadReport}</span>
             </Button>
