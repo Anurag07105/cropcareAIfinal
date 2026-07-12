@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from ..database import models, schemas, get_db
 from typing import List
 
-router = APIRouter(prefix="/help", tags=["Help & Support"])
+router = APIRouter(tags=["Help & Support"])
 
 @router.get("/quick-help")
 def get_quick_help():

@@ -39,17 +39,25 @@ const translations = {
     prescription: 'दवा',
     recommendedActions: 'सुझावित कार्य',
     downloadReport: 'रिपोर्ट डाउनलोड करें',
-    shareResults: 'परिणाम साझा करें',
-    severity: {
-      high: 'उच्च प्राथमिकता',
-      medium: 'मध्यम प्राथमिकता',
-      low: 'कम प्राथमिकता'
-    }
-  }
-};
-
-export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
+    shareResults: 'परिणाम �export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
   const t = translations[language as keyof typeof translations] || translations.en;
+
+  // Handle case where result contains an error message (from Index.tsx catch block)
+  if (!result || (result as any).error) {
+    return (
+      <Card className="border-l-4 border-l-destructive shadow-medium">
+        <CardHeader>
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            <CardTitle>Error during analysis</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">{(result as any)?.error || "Something went wrong during crop analysis."}</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const getSeverity = (confidence: number) => {
     if (confidence >= 85) return 'high';
@@ -66,7 +74,8 @@ export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
     }
   };
 
-  const severity = getSeverity(result.confidence);
+  const confidence = result.confidence || 0;
+  const severity = getSeverity(confidence);
 
   return (
     <div className="space-y-6">
@@ -92,10 +101,10 @@ export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
                 <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${result.confidence}%` }}
+                    style={{ width: `${confidence}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium">{result.confidence}%</span>
+                <span className="text-sm font-medium">{confidence}%</span>
               </div>
             </div>
           </div>
@@ -133,7 +142,7 @@ export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
               <span>{t.recommendedActions}</span>
             </h4>
             <ul className="space-y-2">
-              {result.actions.map((action, index) => (
+              {(result.actions || []).map((action, index) => (
                 <li key={index} className="flex items-start space-x-3">
                   <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-xs font-medium text-primary">{index + 1}</span>
@@ -153,6 +162,16 @@ export const AnalysisResult = ({ result, language }: AnalysisResultProps) => {
               <span>{t.downloadReport}</span>
             </Button>
             <Button variant="outline" className="flex items-center space-x-2">
+              <Share2 className="w-4 h-4" />
+              <span>{t.shareResults}</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+line" className="flex items-center space-x-2">
               <Share2 className="w-4 h-4" />
               <span>{t.shareResults}</span>
             </Button>

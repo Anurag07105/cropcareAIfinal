@@ -2,7 +2,7 @@
 
 from sqlalchemy import (
     Column, Integer, String, Boolean, Text, 
-    ForeignKey, DateTime, UniqueConstraint, func
+    ForeignKey, DateTime, UniqueConstraint, func, Float
 )
 from sqlalchemy.orm import relationship
 from . import Base
@@ -12,6 +12,7 @@ from datetime import datetime
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
+    supabase_uid = Column(String, unique=True, index=True, nullable=True)
     
     # Made email optional to allow phone-only signup
     name = Column(String, nullable=True)
@@ -29,30 +30,32 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    posts = relationship("Post", back_populates="author")
+    posts = relationship("CommunityPost", back_populates="author")
     comments = relationship("Comment", back_populates="author")
+    crop_images = relationship("CropImage", back_populates="user")
 
 
-# --- FIX ---: Added the missing CommunityPost model required by community.py
+class CropImage(Base):
+    __tablename__ = "crop_images"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    image_url = Column(String, nullable=False)
+    disease_name = Column(String, nullable=True)
+    confidence = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    user = relationship("User", back_populates="crop_images")
+
+
 class CommunityPost(Base):
     __tablename__ = "community_posts"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     content = Column(Text, nullable=False)
-    author = Column(String, nullable=False)
+    image_url = Column(String, nullable=True)
     likes = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-
-# NOTE: The 'Post' model below is not used by any of your current routes.
-# Consider removing it if 'CommunityPost' is your intended model for community features.
-class Post(Base):
-    __tablename__ = "posts"
-    id = Column(Integer, primary_key=True, index=True)
-    content = Column(Text, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    is_deleted = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
     author = relationship("User", back_populates="posts")
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
 
@@ -60,13 +63,13 @@ class Post(Base):
 class Comment(Base):
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True, index=True)
-    content = Column(Text, nullable=False)
+    post_id = Column(Integer, ForeignKey("community_posts.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
-    is_deleted = Column(Boolean, default=False)
+    comment = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
     author = relationship("User", back_populates="comments")
-    post = relationship("Post", back_populates="comments")
+    post = relationship("CommunityPost", back_populates="comments")
 
 
 class Like(Base):

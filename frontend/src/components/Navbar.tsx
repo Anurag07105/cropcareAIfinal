@@ -1,7 +1,17 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Menu, X, HelpCircle, Users, Search, User, Home } from 'lucide-react';
+import { Leaf, Menu, X, HelpCircle, Users, Search, User, Home, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavbarProps {
   language: string;
@@ -31,6 +41,7 @@ const translations = {
 export const Navbar = ({ language }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
   const t = translations[language as keyof typeof translations] || translations.en;
 
   const navItems = [
@@ -70,11 +81,39 @@ export const Navbar = ({ language }: NavbarProps) => {
                 </Link>
               );
             })}
-            <Link to="/login">
-              <Button variant="outline" className="ml-4">
-                {t.login}
-              </Button>
-            </Link>
+            {!user ? (
+              <Link to="/login">
+                <Button variant="outline" className="ml-4">
+                  {t.login}
+                </Button>
+              </Link>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full ml-4">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.name || user.email} />
+                      <AvatarFallback>{(user.user_metadata?.name || user.email || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.user_metadata?.name || 'User'}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="cursor-pointer text-red-600 focus:text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -107,11 +146,37 @@ export const Navbar = ({ language }: NavbarProps) => {
                   </Link>
                 );
               })}
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full mt-2">
-                  {t.login}
-                </Button>
-              </Link>
+              {!user ? (
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full mt-2">
+                    {t.login}
+                  </Button>
+                </Link>
+              ) : (
+                <div className="pt-4 mt-2 border-t border-border">
+                  <div className="flex items-center px-2 mb-4">
+                    <Avatar className="h-10 w-10 mr-3">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.name || user.email} />
+                      <AvatarFallback>{(user.user_metadata?.name || user.email || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{user.user_metadata?.name || 'User'}</span>
+                      <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50" 
+                    onClick={() => {
+                      signOut();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign out
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}

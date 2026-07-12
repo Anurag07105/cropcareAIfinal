@@ -27,7 +27,7 @@ class UserOut(UserBase):
     name: Optional[str] = None
     is_active: bool
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Token(BaseModel):
     access_token: str
@@ -45,25 +45,30 @@ class PostOut(BaseModel):
     is_deleted: bool
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # ------------------ COMMENTS ------------------
 class CommentCreate(BaseModel):
-    post_id: int
     content: str
-    parent_id: Optional[int] = None
 
-class Comment(BaseModel):  # Renamed from CommentOut to match community.py
+class Comment(BaseModel):
     id: int
     post_id: int
     user_id: int
-    parent_id: Optional[int]
-    content: str
-    is_deleted: bool
+    comment: str
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class CommentOut(BaseModel):
+    id: int
+    post_id: int
+    user_id: int
+    comment: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
 
 
 # ------------------ REPORTS ------------------
@@ -85,24 +90,24 @@ class HelpPost(HelpPostBase):
     id: int
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # ------------------ COMMUNITY POSTS ------------------
 class CommunityPostBase(BaseModel):
-    title: str
     content: str
-    author: str
+    image_url: Optional[str] = None
 
 class CommunityPostCreate(CommunityPostBase):
     pass
 
 class CommunityPost(CommunityPostBase):
     id: int
+    user_id: int
     created_at: datetime
     likes: Optional[int] = 0
     class Config:
-        orm_mode = True
+        from_attributes = True
 # ------------------ FAQ ------------------
 # Base schema for FAQ (common fields)
 class FAQBase(BaseModel):
@@ -118,7 +123,7 @@ class FAQOut(FAQBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Base schema for SupportMessage
 class SupportMessageBase(BaseModel):
@@ -135,4 +140,4 @@ class SupportMessageOut(SupportMessageBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
